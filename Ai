@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle-9: Nadim Sir's Personal Robot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: radial-gradient(circle, #001d3d 0%, #000000 100%);
+            color: #ffc300;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* রোবটের ভিজ্যুয়াল স্টাইল */
+        #robot-ui {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 8px solid #ffc300;
+            box-shadow: 0 0 50px #ffc300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            position: relative;
+            margin-bottom: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .eye {
+            width: 40px;
+            height: 40px;
+            background: #ffc300;
+            border-radius: 50%;
+            margin: 10px;
+            box-shadow: 0 0 15px #ffc300;
+        }
+
+        .mouth {
+            width: 80px;
+            height: 10px;
+            background: #ffc300;
+            position: absolute;
+            bottom: 60px;
+            border-radius: 5px;
+            transition: 0.1s;
+        }
+
+        #status {
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #ffc300;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 30px;
+            background: #ffc300;
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 195, 0, 0.4);
+        }
+
+        button:active { transform: scale(0.95); }
+
+        #video-preview {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 150px;
+            border: 2px solid #ffc300;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="robot-ui">
+        <div class="eye"></div>
+        <div class="eye"></div>
+        <div class="mouth" id="robot-mouth"></div>
+    </div>
+
+    <div id="status">সিস্টেম লোড হচ্ছে, নাদিম স্যার...</div>
+
+    <div class="controls">
+        <button onclick="activateRobot()">রোবট সক্রিয় করুন</button>
+        <button onclick="startScreenShare()">মার্কেট শেয়ার করুন</button>
+    </div>
+
+    <video id="video-preview" autoplay muted></video>
+
+    <script>
+        const statusDisplay = document.getElementById('status');
+        const mouth = document.getElementById('robot-mouth');
+        const videoElement = document.getElementById('video-preview');
+
+        // রোবটের কণ্ঠস্বর (Bengali Female Voice)
+        function robotSpeak(text) {
+            const synth = window.speechSynthesis;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'bn-BD';
+            utter.rate = 1.0;
+            utter.pitch = 1.2;
+
+            utter.onstart = () => {
+                statusDisplay.innerText = "রোবট কথা বলছে...";
+                mouth.style.height = "30px"; // মুখ লড়বে
+            };
+            utter.onend = () => {
+                mouth.style.height = "10px";
+                statusDisplay.innerText = "নাদিম স্যার, আমি শুনছি...";
+                startListening(); // কথা শেষ হলে স্বয়ংক্রিয়ভাবে শোনা শুরু করবে
+            };
+
+            synth.speak(utter);
+        }
+
+        // নাদিম স্যারের কথা শোনার ক্ষমতা (Voice Listening)
+        function startListening() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("আপনার ব্রাউজারে ভয়েস সাপোর্ট নেই। দয়া করে Chrome ব্যবহার করুন।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'bn-BD';
+            recognition.continuous = false;
+
+            recognition.onstart = () => {
+                statusDisplay.innerText = "নাদিম স্যার, কিছু বলুন...";
+            };
+
+            recognition.onresult = (event) => {
+                const command = event.results[0][0].transcript.toLowerCase();
+                statusDisplay.innerText = "আপনি বলেছেন: " + command;
+                handleAI(command);
+            };
+
+            recognition.onerror = () => {
+                statusDisplay.innerText = "আমি শুনতে পাইনি, আবার বলুন স্যার।";
+            };
+
+            recognition.start();
+        }
+
+        // এআই লজিক (নাদিম স্যারের পার্সোনাল ব্রেইন)
+        function handleAI(command) {
+            if (command.includes("হ্যালো") || command.includes("কেমন আছো")) {
+                robotSpeak("হ্যালো নাদিম স্যার। আমি আপনার রোবট পার্টনার। আমি আপনার হুকুমের জন্য প্রস্তুত।");
+            } 
+            else if (command.includes("মার্কেট") || command.includes("ডিকে উইনগো")) {
+                robotSpeak("জি নাদিম স্যার, আমি ডিকে উইনগো মার্কেটের জন্য প্রস্তুত। আপনার স্ক্রিন শেয়ার বাটনে ক্লিক করুন যাতে আমি চার্ট দেখতে পারি।");
+            }
+            else if (command.includes("বিগ") || command.includes("স্মল")) {
+                robotSpeak("আমি বুঝতে পারছি নাদিম স্যার। প্যাটার্ন অনুযায়ী মার্কেট এখন এই সিগন্যালটি ফলো করছে। আমি ডাটা সেভ করে রাখছি।");
+            }
+            else {
+                robotSpeak("ঠিক আছে নাদিম স্যার। আমি আপনার কথা মাথায় রাখছি এবং এটি এনালাইজ করছি।");
+            }
+        }
+
+        // স্ক্রিন শেয়ার সেটিং (গুগল পারমিশন)
+        async function startScreenShare() {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                videoElement.srcObject = stream;
+                videoElement.style.display = "block";
+                robotSpeak("নাদিম স্যার, আমি আপনার স্ক্রিন দেখতে পাচ্ছি। এখন আপনি মার্কেটে যান, আমি চার্ট এনালাইজ করছি।");
+            } catch (err) {
+                console.error("Error: " + err);
+                robotSpeak("নাদিম স্যার, স্ক্রিন শেয়ারিং পারমিশন রিজেক্ট করা হয়েছে।");
+            }
+        }
+
+        function activateRobot() {
+            robotSpeak("স্বাগতম নাদিম স্যার। আমি ওরাসেল নাইন। আজ আমরা একসাথে মার্কেট এনালাইজ করব।");
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle-9: Nadim Sir's Personal Robot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: radial-gradient(circle, #001d3d 0%, #000000 100%);
+            color: #ffc300;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* রোবটের ভিজ্যুয়াল স্টাইল */
+        #robot-ui {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 8px solid #ffc300;
+            box-shadow: 0 0 50px #ffc300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            position: relative;
+            margin-bottom: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .eye {
+            width: 40px;
+            height: 40px;
+            background: #ffc300;
+            border-radius: 50%;
+            margin: 10px;
+            box-shadow: 0 0 15px #ffc300;
+        }
+
+        .mouth {
+            width: 80px;
+            height: 10px;
+            background: #ffc300;
+            position: absolute;
+            bottom: 60px;
+            border-radius: 5px;
+            transition: 0.1s;
+        }
+
+        #status {
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #ffc300;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 30px;
+            background: #ffc300;
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 195, 0, 0.4);
+        }
+
+        button:active { transform: scale(0.95); }
+
+        #video-preview {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 150px;
+            border: 2px solid #ffc300;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="robot-ui">
+        <div class="eye"></div>
+        <div class="eye"></div>
+        <div class="mouth" id="robot-mouth"></div>
+    </div>
+
+    <div id="status">সিস্টেম লোড হচ্ছে, নাদিম স্যার...</div>
+
+    <div class="controls">
+        <button onclick="activateRobot()">রোবট সক্রিয় করুন</button>
+        <button onclick="startScreenShare()">মার্কেট শেয়ার করুন</button>
+    </div>
+
+    <video id="video-preview" autoplay muted></video>
+
+    <script>
+        const statusDisplay = document.getElementById('status');
+        const mouth = document.getElementById('robot-mouth');
+        const videoElement = document.getElementById('video-preview');
+
+        // রোবটের কণ্ঠস্বর (Bengali Female Voice)
+        function robotSpeak(text) {
+            const synth = window.speechSynthesis;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'bn-BD';
+            utter.rate = 1.0;
+            utter.pitch = 1.2;
+
+            utter.onstart = () => {
+                statusDisplay.innerText = "রোবট কথা বলছে...";
+                mouth.style.height = "30px"; // মুখ লড়বে
+            };
+            utter.onend = () => {
+                mouth.style.height = "10px";
+                statusDisplay.innerText = "নাদিম স্যার, আমি শুনছি...";
+                startListening(); // কথা শেষ হলে স্বয়ংক্রিয়ভাবে শোনা শুরু করবে
+            };
+
+            synth.speak(utter);
+        }
+
+        // নাদিম স্যারের কথা শোনার ক্ষমতা (Voice Listening)
+        function startListening() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("আপনার ব্রাউজারে ভয়েস সাপোর্ট নেই। দয়া করে Chrome ব্যবহার করুন।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'bn-BD';
+            recognition.continuous = false;
+
+            recognition.onstart = () => {
+                statusDisplay.innerText = "নাদিম স্যার, কিছু বলুন...";
+            };
+
+            recognition.onresult = (event) => {
+                const command = event.results[0][0].transcript.toLowerCase();
+                statusDisplay.innerText = "আপনি বলেছেন: " + command;
+                handleAI(command);
+            };
+
+            recognition.onerror = () => {
+                statusDisplay.innerText = "আমি শুনতে পাইনি, আবার বলুন স্যার।";
+            };
+
+            recognition.start();
+        }
+
+        // এআই লজিক (নাদিম স্যারের পার্সোনাল ব্রেইন)
+        function handleAI(command) {
+            if (command.includes("হ্যালো") || command.includes("কেমন আছো")) {
+                robotSpeak("হ্যালো নাদিম স্যার। আমি আপনার রোবট পার্টনার। আমি আপনার হুকুমের জন্য প্রস্তুত।");
+            } 
+            else if (command.includes("মার্কেট") || command.includes("ডিকে উইনগো")) {
+                robotSpeak("জি নাদিম স্যার, আমি ডিকে উইনগো মার্কেটের জন্য প্রস্তুত। আপনার স্ক্রিন শেয়ার বাটনে ক্লিক করুন যাতে আমি চার্ট দেখতে পারি।");
+            }
+            else if (command.includes("বিগ") || command.includes("স্মল")) {
+                robotSpeak("আমি বুঝতে পারছি নাদিম স্যার। প্যাটার্ন অনুযায়ী মার্কেট এখন এই সিগন্যালটি ফলো করছে। আমি ডাটা সেভ করে রাখছি।");
+            }
+            else {
+                robotSpeak("ঠিক আছে নাদিম স্যার। আমি আপনার কথা মাথায় রাখছি এবং এটি এনালাইজ করছি।");
+            }
+        }
+
+        // স্ক্রিন শেয়ার সেটিং (গুগল পারমিশন)
+        async function startScreenShare() {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                videoElement.srcObject = stream;
+                videoElement.style.display = "block";
+                robotSpeak("নাদিম স্যার, আমি আপনার স্ক্রিন দেখতে পাচ্ছি। এখন আপনি মার্কেটে যান, আমি চার্ট এনালাইজ করছি।");
+            } catch (err) {
+                console.error("Error: " + err);
+                robotSpeak("নাদিম স্যার, স্ক্রিন শেয়ারিং পারমিশন রিজেক্ট করা হয়েছে।");
+            }
+        }
+
+        function activateRobot() {
+            robotSpeak("স্বাগতম নাদিম স্যার। আমি ওরাসেল নাইন। আজ আমরা একসাথে মার্কেট এনালাইজ করব।");
+        }
+    </script>
+</body>
+</html>
